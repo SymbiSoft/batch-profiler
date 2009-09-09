@@ -10,58 +10,142 @@ import msys # Extra module
 
 KStart = time.time()
 __title__ = "Batch Profile"
-__version__ = "0.2"
+__version__ = "0.3"
 __author__ = "madhacker"
 __email__ = "madhacker.na@gmail.com"
-__shell__ = 1
+__shell__ = 1 # Define if it's a script or an application
 
-class _Main:
+class _UI:
 	def __init__(self):
-		self.canvas = appuifw.Canvas(event_callback = None, redraw_callback = None, resize_callback = None)
+		self._first_run_()
+		self.default_list_for_listbox = [(u"Profile 1 (DEF)", 'profile1')]
 		self.lock = e32.Ao_lock()
 		appuifw.app.screen = 'normal'
+		self.set_profile(manual = 'profile1')
 		appuifw.app.title = unicode("%s %s" % (__title__, __version__))
-		self.runprofilemenu = (u"Run", ((u"Profile 1", lambda:self.run_profile('profile1')), (u"Profile 2", lambda:self.run_profile('profile2')), (u"Profile 3", lambda:self.run_profile('profile3'))))
-		self.profile1menu = (u"Profile 1", ((u"Add apps", lambda:self.add_prog('profile1')), (u"Add apps from task", lambda:self.add_prog_task('profile1')), (u"Remove App", lambda:self.edit_profile('profile1')), (u"Show Profile", lambda:self.show_profile('profile1'))))
-		self.profile2menu = (u"Profile 2", ((u"Add apps", lambda:self.add_prog('profile2')), (u"Add apps from task", lambda:self.add_prog_task('profile2')), (u"Remove App", lambda:self.edit_profile('profile2')), (u"Show Profile", lambda:self.show_profile('profile2'))))
-		self.profile3menu = (u"Profile 3", ((u"Add apps", lambda:self.add_prog('profile3')), (u"Add apps from task", lambda:self.add_prog_task('profile3')), (u"Remove App", lambda:self.edit_profile('profile3')), (u"Show Profile", lambda:self.show_profile('profile3'))))
+		self.operationmenu = (u"Operation", ((u"Add apps", self.add_prog), (u"Add apps from task", self.add_prog_task), (u"Remove App", self.edit_profile)))
+		self.profilemenu = (u"Profile", ((u"Run", self.run_profile), (u"Show Profile", self.show_profile), (u"New Profile", self.new_profile), (u"Delete Profile", self.delete_profile)))
 		self.aboutmenu = (u"About", self.about)
 		self.exitmenu = (u"Exit", self.quit)
-		appuifw.app.menu = [self.runprofilemenu, self.profile1menu, self.profile2menu, self.profile3menu, self.aboutmenu, self.exitmenu]
-		appuifw.app.body = self.canvas
+		self._prepare_main()
+
+	def _first_run_(self):
+		self.settings = _Settings()
+		if not self.settings.check_file():
+			globalui.global_msg_query(u"This is first run! Please ignore next error warning. Create a new profile to start.",u"1st run")
+
+	def _prepare_main(self):
+		self.list_for_listbox = []
+		try:
+			self.settings = _Settings()
+			self.profili = self.settings.read()
+			self.settings = None
+			a = 1
+			for y in self.profili.keys():
+				self.list_for_listbox.append((u"Profile %s" % a, 'profile%s' % a))
+				a += 1
+			if not len(self.list_for_listbox) > 0: self.list_for_listbox = self.default_list_for_listbox
+		except Exception, err:
+			appuifw.note(unicode(err), "error")
+			self.list_for_listbox = self.default_list_for_listbox
+		appuifw.app.menu = [self.profilemenu, self.operationmenu, self.aboutmenu, self.exitmenu]
+		self.list_box = appuifw.Listbox(map(lambda x:x[0], self.list_for_listbox))
+		self.list_box.bind(key_codes.EKeySelect, self.set_profile)
+		self.list_box.bind(key_codes.EKeyBackspace, self.delete_profile)
+		appuifw.app.body = self.list_box
 		appuifw.app.exit_key_handler = self.quit
 
-	def add_prog(self, profile):
-		apps.show_list(profile)
+	def new_profile(self):
+		try:
+			self.settings = _Settings()
+			self.globalsettings = self.settings.read()
+			self.newsettings = {}
+			self.settings = None
+		except: self.globalsettings = self.newsettings = {}
+		self.settings = _Settings()
+		a = 1
+		for x in self.globalsettings.keys():
+			self.newsettings['profile%s' % a] = self.globalsettings[x]
+			a += 1
+		if len(self.globalsettings.keys()) > 0:	id = a + 1
+		else: id = 1
+		self.newsettings['profile%s' % id] = {'applications': []}
+		self.settings.save(self.newsettings)
+		self.settings = None
+		self._prepare_main()
+		self.set_profile(manual = 'profile1')
 
-	def add_prog_task(self, profile):
-		apps.show_list(profile, task = 1)
+	def delete_profile(self):
+		if globalui.global_query(u"Delete '%s'?" % self.profile):
+			try:
+				self.settings = _Settings()
+				self.progs = self.settings.read()
+				self.settings = None
+			except Exception, err:
+				appuifw.note(unicode(err), "error")
+				return
+			if not len(self.progs.keys()) > 0: 
+				appuifw.note(u"You cannot delete default profile", "error")
+				return
+			try:
+				self.settings = _Settings()
+				self.globalsettings = self.settings.read()
+				self.newsettings = {}
+				self.settings = None
+			except: self.globalsettings = self.newsettings = {}
+			self.settings = _Settings()
+			a = 1
+			for x in self.progs.keys():
+				if not x == self.profile: 
+					self.newsettings['profile%s' % a] = self.globalsettings[x]
+					a += 1
+			self.settings.save(self.newsettings)
+			self.settings = None
+			self._prepare_main()
+			self.set_profile(manual = 'profile1')
 
-	def edit_profile(self, profile):
-		apps.show_programs(profile)
+	def run_profile(self):
+		apps.show_list(self.profile)
 
-	def show_profile(self, profile):
-		apps.show_only(profile)
+	def add_prog(self):
+		apps.show_list(self.profile)
+
+	def add_prog_task(self):
+		apps.show_list(self.profile, task = 1)
+
+	def edit_profile(self):
+		apps.show_programs(self.profile)
+
+	def show_profile(self):
+		apps.show_only(self.profile)
+
+	def set_profile(self, manual = None):
+		if manual != None: self.profile = manual
+		else:
+			self.profile = map(lambda x:x[1], self.list_for_listbox)[self.list_box.current()]
+			appuifw.note(unicode("'%s' is set" % self.profile), "conf")
+		msys.navitext(u"'%s' is active" % self.profile)
 
 	def about(self):
 		appuifw.note(u"Author: %s\neMail: %s" % (__author__, __email__))
 
 	def quit(self):
+		msys.navitext(u"")
 		self.lock.signal()
 		if not __shell__: sys.exit()
 
-	def run_profile(self, profile):
+	def run_profile(self):
 		try:
 			self.settings = _Settings()
-			self.progs = self.settings.read().get(profile, '').get('applications', '')
+			self.progs = self.settings.read().get(self.profile, '').get('applications', '')
 			self.settings = None
 		except Exception, err:
 			appuifw.note(unicode(err), "error")
 			return
 		if not len(self.progs) > 0: 
-			appuifw.note(u"No applications in %s" % profile, "error")
+			appuifw.note(u"No applications in %s" % self.profile, "error")
 			return
-		print u"Starting %s" % profile
+		print u"Starting %s" % self.profile
 		for uid in self.progs:
 			id = apps.find_in_list(uid)
 			e32.start_exe(apps.lista_applicazioni[id][2], '')
@@ -108,6 +192,7 @@ class _Core:
 		appuifw.app.exit_key_handler = self.old_quit
 		msys.option_text(self.old_option_text)
 		msys.exit_text(self.old_exit_text)
+		batch._prepare_main()
 
 	def check(self, name):
 		if name.lower() in self.programmi:
@@ -157,7 +242,6 @@ class _Core:
 			self.list_box = appuifw.Listbox(map(lambda x:x, self.programmiscelti))
 		else:
 			self.list_box = appuifw.Listbox(map(lambda x:x[0], self.programmiscelti))
-			# if bind: self.list_box.bind(key_codes.EKeySelect, self.delete_program)
 			if bind: self.list_box.bind(key_codes.EKeyBackspace, self.delete_program)
 		appuifw.app.body = self.list_box
 
@@ -209,6 +293,9 @@ class _Settings:
 	def __init__(self):
 		self.KFileSettings = "%s\\settings.dat" % os.getcwd()
 
+	def check_file(self):
+		return os.path.exists(self.KFileSettings)
+
 	def save(self, tuple):
 		f = codecs.open(self.KFileSettings, 'wt')
 		f.write(repr(tuple))
@@ -223,10 +310,10 @@ class _Settings:
 
 KNow = time.time()
 KTimeForStart = KNow - KStart # In seconds
-print u"%s sec to start" % int(KTimeForStart)
-batch = _Main()
+print u"%.2f sec to start" % KTimeForStart
+batch = _UI()
 apps = _Core()
 batch.run()
 KEnd = time.time()
 KTimeLogged = KEnd - KNow
-print u"%s sec logged in %s %s" % (int(KTimeLogged), __title__, __version__)
+print u"%.2f sec logged in %s %s" % (KTimeLogged, __title__, __version__)
