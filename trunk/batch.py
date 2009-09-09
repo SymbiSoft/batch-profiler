@@ -30,16 +30,13 @@ class _UI:
 		self._prepare_main()
 
 	def _first_run_(self):
-		self.settings = _Settings()
-		if not self.settings.check_file():
+		if not settings.check_file():
 			globalui.global_msg_query(u"This is first run! Please ignore next error warning. Create a new profile to start.",u"1st run")
 
 	def _prepare_main(self):
 		self.list_for_listbox = []
 		try:
-			self.settings = _Settings()
-			self.profili = self.settings.read()
-			self.settings = None
+			self.profili = settings.read()
 			a = 1
 			for y in self.profili.keys():
 				self.list_for_listbox.append((u"Profile %s" % a, 'profile%s' % a))
@@ -57,12 +54,9 @@ class _UI:
 
 	def new_profile(self):
 		try:
-			self.settings = _Settings()
-			self.globalsettings = self.settings.read()
+			self.globalsettings = settings.read()
 			self.newsettings = {}
-			self.settings = None
 		except: self.globalsettings = self.newsettings = {}
-		self.settings = _Settings()
 		a = 1
 		for x in self.globalsettings.keys():
 			self.newsettings['profile%s' % a] = self.globalsettings[x]
@@ -70,17 +64,13 @@ class _UI:
 		if len(self.globalsettings.keys()) > 0:	id = a + 1
 		else: id = 1
 		self.newsettings['profile%s' % id] = {'applications': []}
-		self.settings.save(self.newsettings)
-		self.settings = None
+		settings.save(self.newsettings)
 		self._prepare_main()
 		self.set_profile(manual = 'profile1')
 
 	def delete_profile(self):
 		if globalui.global_query(u"Delete '%s'?" % self.profile):
-			try:
-				self.settings = _Settings()
-				self.progs = self.settings.read()
-				self.settings = None
+			try: self.progs = settings.read()
 			except Exception, err:
 				appuifw.note(unicode(err), "error")
 				return
@@ -88,19 +78,15 @@ class _UI:
 				appuifw.note(u"You cannot delete default profile", "error")
 				return
 			try:
-				self.settings = _Settings()
-				self.globalsettings = self.settings.read()
+				self.globalsettings = settings.read()
 				self.newsettings = {}
-				self.settings = None
 			except: self.globalsettings = self.newsettings = {}
-			self.settings = _Settings()
 			a = 1
 			for x in self.progs.keys():
 				if not x == self.profile: 
 					self.newsettings['profile%s' % a] = self.globalsettings[x]
 					a += 1
-			self.settings.save(self.newsettings)
-			self.settings = None
+			settings.save(self.newsettings)
 			self._prepare_main()
 			self.set_profile(manual = 'profile1')
 
@@ -135,10 +121,7 @@ class _UI:
 		if not __shell__: sys.exit()
 
 	def run_profile(self):
-		try:
-			self.settings = _Settings()
-			self.progs = self.settings.read().get(self.profile, '').get('applications', '')
-			self.settings = None
+		try: self.progs = settings.read().get(self.profile, '').get('applications', '')
 		except Exception, err:
 			appuifw.note(unicode(err), "error")
 			return
@@ -174,16 +157,11 @@ class _Core:
 	def exit(self, query = 1):
 		if query:
 			if globalui.global_query(u"Save changes?"):	
-				try:
-					self.settings = _Settings()
-					self.globalsettings = self.settings.read()
-					self.settings = None
+				try: self.globalsettings = settings.read()
 				except: self.globalsettings = {}
-				self.settings = _Settings()
 				self.saving["applications"] = self.programmi
 				self.globalsettings[self.profile] = self.saving
-				self.settings.save(self.globalsettings)
-				self.settings = None
+				settings.save(self.globalsettings)
 				print u"Saved"
 		self.programmi = []
 		appuifw.app.body = self.old_body
@@ -252,10 +230,7 @@ class _Core:
 		appuifw.app.body = self.list_box
 
 	def _preprare_(self):
-		try:
-			self.settings = _Settings()
-			self.programmi = self.settings.read().get(self.profile, '').get('applications', '')
-			self.settings = None
+		try: self.programmi = settings.read().get(self.profile, '').get('applications', '')
 		except: pass
 		self.old_quit = appuifw.app.exit_key_handler
 		self.old_body = appuifw.app.body
@@ -311,6 +286,7 @@ class _Settings:
 KNow = time.time()
 KTimeForStart = KNow - KStart # In seconds
 print u"%.2f sec to start" % KTimeForStart
+settings = _Settings()
 batch = _UI()
 apps = _Core()
 batch.run()
