@@ -6,28 +6,28 @@ import os
 import codecs
 import globalui
 import key_codes
-import msys # Extra module
+import msys # Non-native module
 
 KStart = time.time()
 __title__ = "Batch Profile"
-__version__ = "0.3"
+__version__ = "0.4"
 __author__ = "madhacker"
 __email__ = "madhacker.na@gmail.com"
-__shell__ = 1 # Define if it's a script or an application
+__shell__ = 1 # Define if it run in shell or it's an application
 
 class _UI:
 	def __init__(self):
 		self._first_run_()
-		self.default_list_for_listbox = [(u"Profile 1 (DEF)", 'profile1')]
+		self.default_list_for_listbox = [(u"Profile 1 (DEF)", 'Profile 1 (DEF)')]
 		self.lock = e32.Ao_lock()
 		appuifw.app.screen = 'normal'
-		self.set_profile(manual = 'profile1')
 		appuifw.app.title = unicode("%s %s" % (__title__, __version__))
 		self.operationmenu = (u"Operation", ((u"Add apps", self.add_prog), (u"Add apps from task", self.add_prog_task), (u"Remove App", self.edit_profile)))
 		self.profilemenu = (u"Profile", ((u"Run", self.run_profile), (u"Show Profile", self.show_profile), (u"New Profile", self.new_profile), (u"Delete Profile", self.delete_profile)))
 		self.aboutmenu = (u"About", self.about)
 		self.exitmenu = (u"Exit", self.quit)
 		self._prepare_main()
+		self._auto_set_profile()
 
 	def _first_run_(self):
 		if not settings.check_file():
@@ -37,10 +37,8 @@ class _UI:
 		self.list_for_listbox = []
 		try:
 			self.profili = settings.read()
-			a = 1
 			for y in self.profili.keys():
-				self.list_for_listbox.append((u"Profile %s" % a, 'profile%s' % a))
-				a += 1
+				self.list_for_listbox.append((unicode(y), str(y)))
 			if not len(self.list_for_listbox) > 0: self.list_for_listbox = self.default_list_for_listbox
 		except Exception, err:
 			appuifw.note(unicode(err), "error")
@@ -57,16 +55,13 @@ class _UI:
 			self.globalsettings = settings.read()
 			self.newsettings = {}
 		except: self.globalsettings = self.newsettings = {}
-		a = 1
 		for x in self.globalsettings.keys():
-			self.newsettings['profile%s' % a] = self.globalsettings[x]
-			a += 1
-		if len(self.globalsettings.keys()) > 0:	id = a + 1
-		else: id = 1
-		self.newsettings['profile%s' % id] = {'applications': []}
+			self.newsettings[x] = self.globalsettings[x]
+		name = appuifw.query(u"Insert profile name",'text', u"Profile %s" % len(self.globalsettings.keys()))
+		self.newsettings[str(name)] = {'applications': []}
 		settings.save(self.newsettings)
 		self._prepare_main()
-		self.set_profile(manual = 'profile1')
+		self._auto_set_profile()
 
 	def delete_profile(self):
 		if globalui.global_query(u"Delete '%s'?" % self.profile):
@@ -81,14 +76,12 @@ class _UI:
 				self.globalsettings = settings.read()
 				self.newsettings = {}
 			except: self.globalsettings = self.newsettings = {}
-			a = 1
 			for x in self.progs.keys():
 				if not x == self.profile: 
-					self.newsettings['profile%s' % a] = self.globalsettings[x]
-					a += 1
+					self.newsettings[x] = self.globalsettings[x]
 			settings.save(self.newsettings)
 			self._prepare_main()
-			self.set_profile(manual = 'profile1')
+			self._auto_set_profile()
 
 	def run_profile(self):
 		apps.show_list(self.profile)
@@ -104,6 +97,9 @@ class _UI:
 
 	def show_profile(self):
 		apps.show_only(self.profile)
+
+	def _auto_set_profile(self):
+			self.set_profile(manual = map(lambda x:x[1], self.list_for_listbox)[0])
 
 	def set_profile(self, manual = None):
 		if manual != None: self.profile = manual
@@ -284,7 +280,7 @@ class _Settings:
 		return config
 
 KNow = time.time()
-KTimeForStart = KNow - KStart # In seconds
+KTimeForStart = KNow - KStart
 print u"%.2f sec to start" % KTimeForStart
 settings = _Settings()
 batch = _UI()
