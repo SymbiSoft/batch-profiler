@@ -47,6 +47,7 @@ class _UI:
 		self.list_box.bind(key_codes.EKeyBackspace, self.delete_profile)
 		appuifw.app.body = self.list_box
 		appuifw.app.exit_key_handler = self.quit
+		self._auto_set_profile()
 
 	def new_profile(self):
 		try: self.globalsettings = settings.read()
@@ -57,7 +58,6 @@ class _UI:
 		self.newsettings[str(name)] = {"applications": []}
 		settings.save(self.newsettings)
 		self._prepare_main()
-		self._auto_set_profile()
 
 	def rename_profile(self):
 		try: self.globalsettings = settings.read()
@@ -74,7 +74,6 @@ class _UI:
 			else: self.newsettings[str(name)] = self.globalsettings[x]
 		settings.save(self.newsettings)
 		self._prepare_main()
-		self._auto_set_profile()
 
 	def delete_profile(self):
 		if globalui.global_query(u"Delete '%s'?" % self.profile):
@@ -90,7 +89,6 @@ class _UI:
 				if not x == self.profile: self.newsettings[x] = self.globalsettings[x]
 			settings.save(self.newsettings)
 			self._prepare_main()
-			self._auto_set_profile()
 
 	def add_prog(self): apps.show_list(self.profile)
 
@@ -136,11 +134,11 @@ class _UI:
 class _Core:
 	def __init__(self):
 		self.changed = 0
-		try: self.lista_applicazioni = msys.listapp()
+		try: self.lista_applicazioni = sorted(msys.listapp())
 		except Exception, err:
 			appuifw.note(unicode(err), "error")
 			self.lista_applicazioni = []
-		try: self.lista_task = msys.listtask()
+		try: self.lista_task = sorted(msys.listtask())
 		except Exception, err:
 			appuifw.note(unicode(err), "error")
 			self.lista_task = []
@@ -199,12 +197,12 @@ class _Core:
 		self.changed = 0
 		if self.task: app = self.lista_task[self.list_box.current()][1].lower()
 		else: app = self.lista_applicazioni[self.list_box.current()][1].lower()
+		self.changed = 1
 		if self.check(app): return
 		self.programmi.append( app )
 		if self.task: name = self.lista_task[self.list_box.current()][0]
 		else: name = self.lista_applicazioni[self.list_box.current()][0]
 		appuifw.note(u"'%s' added in '%s'" % (name, self.profile), "conf")
-		self.changed = 1
 
 	def _update_lb_profile(self, bind = 1):
 		self.programmiscelti = []
@@ -219,6 +217,8 @@ class _Core:
 			self.list_box = appuifw.Listbox(map(lambda x:x[0], self.programmiscelti))
 			if bind: self.list_box.bind(key_codes.EKeyBackspace, self.delete_program)
 		appuifw.app.body = self.list_box
+		msys.navitext(u"")
+		
 
 	def _update_lb_list(self):
 		if self.task: self.list_box = appuifw.Listbox(map(lambda x:x[0], self.lista_task))
@@ -251,6 +251,7 @@ class _Core:
 		appuifw.app.title = unicode("Show %s" % self.profile)
 		appuifw.app.exit_key_handler = lambda:self.exit(query = 0)
 		self._update_lb_profile(bind = 0)
+		msys.navitext(u"%s applications" % len(self.programmiscelti))
 
 	def show_list(self, profile, task = 0):
 		self.profile = profile
@@ -260,6 +261,8 @@ class _Core:
 		appuifw.app.title = unicode("App List %s" % self.profile)
 		appuifw.app.exit_key_handler = self.exit
 		self._update_lb_list()
+		if self.task: msys.navitext(u"%s applications" % len(self.lista_task))
+		else: msys.navitext(u"%s applications" % len(self.lista_applicazioni))
 
 class _Settings:
 	def __init__(self): self.KFileSettings = "%s\\settings.dat" % os.getcwd()
