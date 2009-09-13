@@ -111,7 +111,7 @@ class _UI:
 			appuifw.note(unicode("'%s' is set" % self.profile), "conf")
 		msys.navitext(u"'%s' is active" % self.profile)
 
-	def about(self): appuifw.note(u"Author: %s\neMail: %s" % (__author__, __email__))
+	def about(self): appuifw.note(u"Author: %s\nemail: %s" % (__author__, __email__))
 
 	def quit(self):
 		msys.navitext(u"")
@@ -152,8 +152,8 @@ class _Core:
 		self.programmi = []
 		self.saving = {}
 
-	def exit(self, query = 1):
-		if query:
+	def exit(self, ask = 1):
+		if ask:
 			if self.changed:
 				if globalui.global_query(u"Save changes?"):	
 					try: self.globalsettings = settings.read()
@@ -273,9 +273,9 @@ class _Settings:
 
 	def check_file(self): return os.path.exists(self.KFileSettings)
 
-	def save(self, tuple):
+	def save(self, settingstuple):
 		f = codecs.open(self.KFileSettings, "wt")
-		f.write(repr(tuple))
+		f.write(repr(settingstuple))
 		f.close()
 
 	def read(self):
