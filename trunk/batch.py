@@ -90,6 +90,8 @@ class _UI:
 			settings.save(self.newsettings)
 			self._prepare_main()
 
+	def read_profile(self): return self.profile
+
 	def add_prog(self): apps.show_list(self.profile)
 
 	def add_prog_task(self): apps.show_list(self.profile, task = 1)
@@ -98,7 +100,9 @@ class _UI:
 
 	def show_profile(self): apps.show_only(self.profile)
 
-	def _auto_set_profile(self): self.set_profile(manual = map(lambda x:x[1], self.list_for_listbox)[0])
+	def _auto_set_profile(self):
+		try: self.set_profile(manual = self.read_profile())
+		except: self.set_profile(manual = map(lambda x:x[1], self.list_for_listbox)[0])
 
 	def set_profile(self, manual = None):
 		if manual != None: self.profile = manual
@@ -122,11 +126,13 @@ class _UI:
 		if not len(self.progs) > 0: 
 			appuifw.note(u"No applications in '%s'" % self.profile, "error")
 			return
-		print u"Starting '%s'" % self.profile
+		print u"Starting '%s' profile" % self.profile
 		for uid in self.progs:
 			id = apps.find_in_list(uid)
-			e32.start_exe(apps.lista_applicazioni[id][2], "")
-			print u"Running '%s'" % apps.lista_applicazioni[id][0]
+			try:
+				e32.start_exe(apps.lista_applicazioni[id][2], "")
+				print u"Running '%s'" % apps.lista_applicazioni[id][0]
+			except Exception, err: print u"Error: %s" % err
 			e32.ao_sleep(0.1)
 
 	def run(self): self.lock.wait()
@@ -210,6 +216,7 @@ class _Core:
 			index = self.find_in_list(a.lower())
 			if index == None: continue
 			self.programmiscelti.append(self.lista_applicazioni[index])
+		msys.navitext(u"%s applications" % len(self.programmiscelti))
 		if self.programmiscelti == []:
 			self.programmiscelti.append(u"< Empty >")
 			self.list_box = appuifw.Listbox(map(lambda x:x, self.programmiscelti))
@@ -217,8 +224,6 @@ class _Core:
 			self.list_box = appuifw.Listbox(map(lambda x:x[0], self.programmiscelti))
 			if bind: self.list_box.bind(key_codes.EKeyBackspace, self.delete_program)
 		appuifw.app.body = self.list_box
-		msys.navitext(u"")
-		
 
 	def _update_lb_list(self):
 		if self.task: self.list_box = appuifw.Listbox(map(lambda x:x[0], self.lista_task))
@@ -251,7 +256,6 @@ class _Core:
 		appuifw.app.title = unicode("Show %s" % self.profile)
 		appuifw.app.exit_key_handler = lambda:self.exit(query = 0)
 		self._update_lb_profile(bind = 0)
-		msys.navitext(u"%s applications" % len(self.programmiscelti))
 
 	def show_list(self, profile, task = 0):
 		self.profile = profile
