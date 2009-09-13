@@ -58,6 +58,7 @@ class _UI:
 		self.newsettings[str(name)] = {"applications": []}
 		settings.save(self.newsettings)
 		self._prepare_main()
+		if len(self.globalsettings.keys()) == 0: self.set_profile(manual = map(lambda x:x[1], self.list_for_listbox)[0])
 
 	def rename_profile(self):
 		try: self.globalsettings = settings.read()
