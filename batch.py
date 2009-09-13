@@ -74,21 +74,23 @@ class _UI:
 			else: self.newsettings[str(name)] = self.globalsettings[x]
 		settings.save(self.newsettings)
 		self._prepare_main()
+		self.set_profile(manual = map(lambda x:x[1], self.list_for_listbox)[0])
 
 	def delete_profile(self):
+		try: self.globalsettings = settings.read()
+		except Exception, err:
+			appuifw.note(unicode(err), "error")
+			return
+		if not len(self.globalsettings.keys()) > 0: 
+			appuifw.note(u"You cannot delete default profile", "error")
+			return
 		if globalui.global_query(u"Delete '%s'?" % self.profile):
-			try: self.globalsettings = settings.read()
-			except Exception, err:
-				appuifw.note(unicode(err), "error")
-				return
-			if not len(self.globalsettings.keys()) > 0: 
-				appuifw.note(u"You cannot delete default profile", "error")
-				return
 			self.newsettings = {}
 			for x in self.globalsettings.keys():
 				if not x == self.profile: self.newsettings[x] = self.globalsettings[x]
 			settings.save(self.newsettings)
 			self._prepare_main()
+			self.set_profile(manual = map(lambda x:x[1], self.list_for_listbox)[0])
 
 	def read_profile(self): return self.profile
 
