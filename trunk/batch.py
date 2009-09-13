@@ -233,7 +233,8 @@ class _Core:
 
 	def _preprare_(self):
 		try: self.programmi = settings.read().get(self.profile, "").get("applications", "")
-		except: pass
+		except Exception, err:
+			appuifw.note(unicode(err), "error")
 		self.old_quit = appuifw.app.exit_key_handler
 		self.old_body = appuifw.app.body
 		self.old_title = appuifw.app.title
