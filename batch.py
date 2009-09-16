@@ -26,7 +26,7 @@ class _UI:
 		self.lock = e32.Ao_lock()
 		appuifw.app.screen = "normal"
 		appuifw.app.title = unicode("%s %s" % (__title__, __version__))
-		self.operationmenu = (u"Operation", ((u"Add apps", self.add_prog), (u"Add apps from task", self.add_prog_task), (u"Remove App", self.edit_profile)))
+		self.operationmenu = (u"Operation", ((u"Add apps Search", self.add_prog_search), (u"Add apps from task Search", self.add_prog_search_task), (u"Add apps", self.add_prog), (u"Add apps from task", self.add_prog_task), (u"Remove App", self.edit_profile)))
 		self.profilemenu = (u"Profile", ((u"Run", self.run_profile), (u"Show Profile", self.show_profile), (u"New Profile", self.new_profile), (u"Rename Profile", self.rename_profile), (u"Delete Profile", self.delete_profile)))
 		self.aboutmenu = (u"About", self.about)
 		self.exitmenu = (u"Exit", self.quit)
@@ -101,6 +101,10 @@ class _UI:
 
 	def add_prog(self): apps.show_list(self.profile)
 
+	def add_prog_search(self): apps.show_list_search(self.profile)
+
+	def add_prog_search_task(self): apps.show_list_search(self.profile, task = 1)
+
 	def add_prog_task(self): apps.show_list(self.profile, task = 1)
 
 	def edit_profile(self): apps.show_programs(self.profile)
@@ -159,7 +163,7 @@ class _Core:
 		self.programmi = []
 		self.saving = {}
 
-	def exit(self, ask = 1):
+	def _exit(self, ask = 1):
 		if ask:
 			if self.changed:
 				if globalui.global_query(u"Save changes?"):	
@@ -170,6 +174,9 @@ class _Core:
 					settings.save(self.globalsettings)
 					print u"Saved"
 				self.changed = 0
+
+	def exit(self, save = 1):
+		self._exit( ask = save )
 		self.programmi = []
 		appuifw.app.body = self.old_body
 		appuifw.app.menu = self.old_menu
@@ -179,11 +186,11 @@ class _Core:
 		msys.exit_text(self.old_exit_text)
 		batch._prepare_main()
 
-	def check(self, name):
+	def check(self, name, note = 1):
 		if name.lower() in self.programmi:
 			index = self.find_in_list(name.lower())
 			if index == None: return 1
-			appuifw.note(u"'%s' already exist in '%s'" % (self.lista_applicazioni[index][0], self.profile), "error")
+			if note: appuifw.note(u"'%s' already exist in '%s'" % (self.lista_applicazioni[index][0], self.profile), "error")
 			return 1
 		return 0
 
@@ -238,16 +245,22 @@ class _Core:
 		self.list_box.bind(key_codes.EKeySelect, self.add_program)
 		appuifw.app.body = self.list_box
 
-	def _preprare_(self):
+	def _create_progs(self):
 		try: self.programmi = settings.read().get(self.profile, "").get("applications", "")
 		except Exception, err:
 			appuifw.note(unicode(err), "error")
+
+	def _preprare_(self):
+		self._create_progs()
 		self.old_quit = appuifw.app.exit_key_handler
 		self.old_body = appuifw.app.body
-		self.old_title = appuifw.app.title
 		self.old_menu = appuifw.app.menu
 		self.old_option_text = msys.option_text(u"Menu")
+		self._title()
+
+	def _title(self):
 		self.old_exit_text = msys.exit_text(u"Back")
+		self.old_title = appuifw.app.title
 
 	def show_programs(self, profile):
 		self.profile = profile
@@ -260,9 +273,9 @@ class _Core:
 	def show_only(self, profile):
 		self.profile = profile
 		self._preprare_()
-		appuifw.app.menu = [(u"Back", lambda:self.exit(ask = 0))]
+		appuifw.app.menu = [(u"Back", lambda:self.exit(save = 0))]
 		appuifw.app.title = unicode("Show %s" % self.profile)
-		appuifw.app.exit_key_handler = lambda:self.exit(ask = 0)
+		appuifw.app.exit_key_handler = lambda:self.exit(save = 0)
 		self._update_lb_profile(bind = 0)
 
 	def show_list(self, profile, task = 0):
@@ -275,6 +288,36 @@ class _Core:
 		self._update_lb_list()
 		if self.task: msys.navitext(u"%s applications" % len(self.lista_task))
 		else: msys.navitext(u"%s applications" % len(self.lista_applicazioni))
+
+	def show_list_search(self, profile, task = 0):
+		self._title()
+		appz = 0
+		self.profile = profile
+		self.task = task
+		self._create_progs()
+		appuifw.app.title = unicode("App List %s" % self.profile)
+		if self.task:
+			msys.navitext(u"%s applications" % len(self.lista_task))
+			self.selections = appuifw.multi_selection_list(map(lambda x:x[0], self.lista_task), search_field = 1)
+		else:
+			self.selections = appuifw.multi_selection_list(map(lambda x:x[0], self.lista_applicazioni), search_field = 1)
+			msys.navitext(u"%s applications" % len(self.lista_applicazioni))
+		if not len(self.selections):
+			self._on_exit(askquery = 0)
+			return
+		for i_scelto in self.selections:
+			self.app = self.lista_applicazioni[i_scelto][1].lower()
+			if not self.check(self.app, note = 0): 
+				self.programmi.append(self.app)
+				appz += 1
+		self._on_exit()
+
+	def _on_exit(self, askquery = 1):
+		self.changed = askquery
+		self._exit(ask = askquery)
+		appuifw.app.title = self.old_title
+		msys.exit_text(self.old_exit_text)
+		batch._prepare_main()
 
 class _Settings:
 	def __init__(self): self.KFileSettings = "%s\\settings.dat" % os.getcwd()
