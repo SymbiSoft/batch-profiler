@@ -1,3 +1,7 @@
+'''Chiudere i programmi aperti dal profilo
+Aggiungere parametri di avvio
+Search box come alternativa
+'''
 import e32
 import time
 import appuifw
@@ -256,9 +260,9 @@ class _Core:
 	def show_only(self, profile):
 		self.profile = profile
 		self._preprare_()
-		appuifw.app.menu = [(u"Back", lambda:self.exit(query = 0))]
+		appuifw.app.menu = [(u"Back", lambda:self.exit(ask = 0))]
 		appuifw.app.title = unicode("Show %s" % self.profile)
-		appuifw.app.exit_key_handler = lambda:self.exit(query = 0)
+		appuifw.app.exit_key_handler = lambda:self.exit(ask = 0)
 		self._update_lb_profile(bind = 0)
 
 	def show_list(self, profile, task = 0):
