@@ -300,8 +300,8 @@ class _Core:
 			msys.navitext(u"%s applications" % len(self.lista_task))
 			self.selections = appuifw.multi_selection_list(map(lambda x:x[0], self.lista_task), search_field = 1)
 		else:
-			self.selections = appuifw.multi_selection_list(map(lambda x:x[0], self.lista_applicazioni), search_field = 1)
 			msys.navitext(u"%s applications" % len(self.lista_applicazioni))
+			self.selections = appuifw.multi_selection_list(map(lambda x:x[0], self.lista_applicazioni), search_field = 1)
 		if not len(self.selections):
 			self._on_exit(askquery = 0)
 			return
