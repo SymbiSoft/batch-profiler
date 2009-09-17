@@ -1,0 +1,30 @@
+; Languages
+&EN
+
+; Package header
+#{"Batch Profiler"}, (0xE80B52D4), 0, 0, 4, TYPE=SA
+
+; Dependencies
+[0x101F7961], 0, 0, 0, {"Series60ProductID"}
+[0x1028315F], 0, 0, 0, {"Series60ProductID"}
+(0x20022EE8), 1, 9, 7, {"Python runtime"}
+
+; Vendor names
+%{"madhacker"}
+:"madhacker"
+
+"resource\apps\batch_0xe80b52d4.rsc"-"!:\resource\apps\batch_0xe80b52d4.rsc"
+"private\10003a3f\import\apps\batch_0xe80b52d4_reg.rsc"-"!:\private\10003a3f\import\apps\batch_0xe80b52d4_reg.rsc"
+"resource\apps\batch_0xe80b52d4_loc.r01"-"!:\resource\apps\batch_0xe80b52d4_loc.r01"
+"resource\apps\batch_0xe80b52d4_aif.mif"-"!:\resource\apps\batch_0xe80b52d4_aif.mif"
+"private\e80b52d4\launcher.py"-"!:\private\e80b52d4\launcher.py"
+"private\e80b52d4\default.py"-"!:\private\e80b52d4\default.py"
+;"batch.py"-"!:\private\e80b52d4\default.py"
+"sys\bin\kf_globalui_e80b52d4.pyd"-"!:\sys\bin\kf_globalui_e80b52d4.pyd"
+"sys\bin\kf_msys_e80b52d4.pyd"-"!:\sys\bin\kf_msys_e80b52d4.pyd"
+"white-list.cfg"-"!:\private\e80b52d4\white-list.cfg"
+"sys\bin\kf_Py_iad_client_0xe80b52d4.dll"-"!:\sys\bin\kf_Py_iad_client_0xe80b52d4.dll"
+"sys\bin\batch_0xe80b52d4.exe"-"!:\sys\bin\batch_0xe80b52d4.exe"
+"lib.zip"-"!:\private\e80b52d4\lib.zip"
+
+
