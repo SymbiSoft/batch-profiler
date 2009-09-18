@@ -2,7 +2,7 @@
 &EN
 
 ; Package header
-#{"Batch Profiler"}, (0xE80B52D4), 0, 0, 4, TYPE=SA
+#{"Batch Profiler"}, (0xE80B52D4), 0, 0, 5, TYPE=SA
 
 ; Dependencies
 [0x101F7961], 0, 0, 0, {"Series60ProductID"}

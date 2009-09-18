@@ -14,7 +14,7 @@ import msys # Non-native module
 
 KStart = time.time()
 __title__ = "Batch Profiler"
-__version__ = "0.4"
+__version__ = "0.5"
 __author__ = "madhacker"
 __email__ = "madhacker.na@gmail.com"
 __shell__ = 1 # Define if it run in shell or it's an application
@@ -26,7 +26,7 @@ class _UI:
 		self.lock = e32.Ao_lock()
 		appuifw.app.screen = "normal"
 		appuifw.app.title = unicode("%s %s" % (__title__, __version__))
-		self.operationmenu = (u"Operation", ((u"Add apps Search", self.add_prog_search), (u"Add apps from task Search", self.add_prog_search_task), (u"Add apps", self.add_prog), (u"Add apps from task", self.add_prog_task), (u"Remove App", self.edit_profile)))
+		self.operationmenu = (u"Operation", ((u"Add apps", self.add_prog_search), (u"Add apps from task", self.add_prog_search_task), (u"Remove App", self.edit_profile)))
 		self.profilemenu = (u"Profile", ((u"Run", self.run_profile), (u"Show Profile", self.show_profile), (u"New Profile", self.new_profile), (u"Rename Profile", self.rename_profile), (u"Delete Profile", self.delete_profile)))
 		self.aboutmenu = (u"About", self.about)
 		self.exitmenu = (u"Exit", self.quit)
@@ -99,13 +99,9 @@ class _UI:
 
 	def read_profile(self): return self.profile
 
-	def add_prog(self): apps.show_list(self.profile)
-
 	def add_prog_search(self): apps.show_list_search(self.profile)
 
 	def add_prog_search_task(self): apps.show_list_search(self.profile, task = 1)
-
-	def add_prog_task(self): apps.show_list(self.profile, task = 1)
 
 	def edit_profile(self): apps.show_programs(self.profile)
 
@@ -239,12 +235,6 @@ class _Core:
 			if bind: self.list_box.bind(key_codes.EKeyBackspace, self.delete_program)
 		appuifw.app.body = self.list_box
 
-	def _update_lb_list(self):
-		if self.task: self.list_box = appuifw.Listbox(map(lambda x:x[0], self.lista_task))
-		else: self.list_box = appuifw.Listbox(map(lambda x:x[0], self.lista_applicazioni))
-		self.list_box.bind(key_codes.EKeySelect, self.add_program)
-		appuifw.app.body = self.list_box
-
 	def _create_progs(self):
 		try: self.programmi = settings.read().get(self.profile, "").get("applications", "")
 		except Exception, err:
@@ -277,17 +267,6 @@ class _Core:
 		appuifw.app.title = unicode("Show %s" % self.profile)
 		appuifw.app.exit_key_handler = lambda:self.exit(save = 0)
 		self._update_lb_profile(bind = 0)
-
-	def show_list(self, profile, task = 0):
-		self.profile = profile
-		self.task = task
-		self._preprare_()
-		appuifw.app.menu = [(u"Add", self.add_program), (u"Back", self.exit)]
-		appuifw.app.title = unicode("App List %s" % self.profile)
-		appuifw.app.exit_key_handler = self.exit
-		self._update_lb_list()
-		if self.task: msys.navitext(u"%s applications" % len(self.lista_task))
-		else: msys.navitext(u"%s applications" % len(self.lista_applicazioni))
 
 	def show_list_search(self, profile, task = 0):
 		self._title()
