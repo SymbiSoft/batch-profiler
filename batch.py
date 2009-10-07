@@ -16,8 +16,11 @@ __title__ = "Batch Profiler"
 __version__ = "0.5"
 __author__ = "madhacker"
 __email__ = "madhacker.na@gmail.com"
+
+### DO NOT EDIT ###
 __shell__ = 1 # Define if it run in shell or it's an application
 __debug__ = 1 # Define if show error debug popupe
+### END ###
 
 class _UI:
 	def __init__(self):
