@@ -1,4 +1,4 @@
-'''Chiudere i programmi aperti dal profilo in uscita
+__todo__ = '''Chiudere i programmi aperti dal profilo in uscita
 Aggiungere parametri di avvio
 '''
 import e32
@@ -17,6 +17,7 @@ __version__ = "0.5"
 __author__ = "madhacker"
 __email__ = "madhacker.na@gmail.com"
 __shell__ = 1 # Define if it run in shell or it's an application
+__debug__ = 1 # Define if show error debug popupe
 
 class _UI:
 	def __init__(self):
@@ -45,7 +46,8 @@ class _UI:
 			if not len(self.list_for_listbox) > 0:
 				self.list_for_listbox = self.default_list_for_listbox
 		except Exception, err:
-			appuifw.note(unicode(err), "error")
+			if __debug__:
+				appuifw.note(unicode(err), "error")
 			self.list_for_listbox = self.default_list_for_listbox
 		appuifw.app.menu = [self.profilemenu, self.operationmenu, self.aboutmenu, self.exitmenu]
 		self.list_box = appuifw.Listbox(map(lambda x:x[0], self.list_for_listbox))
@@ -74,7 +76,8 @@ class _UI:
 		try:
 			self.globalsettings = settings.read()
 		except Exception, err:
-			appuifw.note(unicode(err), "error")
+			if __debug__:
+				appuifw.note(unicode(err), "error")
 			return
 		if not len(self.globalsettings.keys()) > 0:
 			appuifw.note(u"You cannot rename default empty profile", "error")
@@ -94,7 +97,8 @@ class _UI:
 		try:
 			self.globalsettings = settings.read()
 		except Exception, err:
-			appuifw.note(unicode(err), "error")
+			if __debug__:
+				appuifw.note(unicode(err), "error")
 			return
 		if not len(self.globalsettings.keys()) > 0:
 			appuifw.note(u"You cannot delete default profile", "error")
@@ -150,7 +154,8 @@ class _UI:
 		try:
 			self.progs = settings.read().get(self.profile, "").get("applications", "")
 		except Exception, err:
-			appuifw.note(unicode(err), "error")
+			if __debug__:
+				appuifw.note(unicode(err), "error")
 			return
 		if not len(self.progs) > 0:
 			appuifw.note(u"No applications in '%s'" % self.profile, "error")
@@ -162,7 +167,8 @@ class _UI:
 				e32.start_exe(apps.lista_applicazioni[id][2], "")
 				print u"Running '%s'" % apps.lista_applicazioni[id][0]
 			except Exception, err:
-				print u"Error: %s" % err
+				if __debug__:
+					print u"Error: %s" % err
 			e32.ao_sleep(0.1)
 
 	def run(self):
@@ -174,12 +180,14 @@ class _Core:
 		try:
 			self.lista_applicazioni = sorted(msys.listapp())
 		except Exception, err:
-			appuifw.note(unicode(err), "error")
+			if __debug__:
+				appuifw.note(unicode(err), "error")
 			self.lista_applicazioni = []
 		try:
 			self.lista_task = sorted(msys.listtask())
 		except Exception, err:
-			appuifw.note(unicode(err), "error")
+			if __debug__:
+				appuifw.note(unicode(err), "error")
 			self.lista_task = []
 		self.task = 0
 		self.programmi = []
@@ -280,7 +288,8 @@ class _Core:
 		try:
 			self.programmi = settings.read().get(self.profile, "").get("applications", "")
 		except Exception, err:
-			appuifw.note(unicode(err), "error")
+			if __debug__:
+				appuifw.note(unicode(err), "error")
 
 	def _preprare_(self):
 		self._create_progs()
