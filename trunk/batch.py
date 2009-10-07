@@ -208,7 +208,8 @@ class _Core:
 		appuifw.app.exit_key_handler = self.old_quit
 		msys.option_text(self.old_option_text)
 		msys.exit_text(self.old_exit_text)
-		batch._prepare_main()
+		# batch._prepare_main()
+		batch._auto_set_profile()
 
 	def check(self, name, note = 1):
 		if name.lower() in self.programmi:
@@ -337,7 +338,8 @@ class _Core:
 		self._exit(ask = askquery)
 		appuifw.app.title = self.old_title
 		msys.exit_text(self.old_exit_text)
-		batch._prepare_main()
+		# batch._prepare_main()
+		batch._auto_set_profile()
 
 class _Settings:
 	def __init__(self):
