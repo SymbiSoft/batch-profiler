@@ -9,17 +9,19 @@ import os
 import codecs
 import globalui
 import key_codes
-import msys # Non-native module
+
+### NON-NATIVE MODULE ###
+import msys
 
 KStart = time.time()
 __title__ = "Batch Profiler"
-__version__ = "0.5"
+__version__ = "0.6"
 __author__ = "madhacker"
 __email__ = "madhacker.na@gmail.com"
 
 ### DO NOT EDIT ###
 __shell__ = 1 # Define if it run in shell or it's an application
-__debug__ = 1 # Define if show error debug popupe
+__batchdebug__ = 1 # Define if show error debug popupe
 ### END ###
 
 class _UI:
@@ -39,6 +41,7 @@ class _UI:
 	def _first_run_(self):
 		if not settings.check_file():
 			globalui.global_msg_query(u"This is first run! Please ignore next error warning. Create a new profile to start.",u"1st run")
+			settings.save({})
 
 	def _prepare_main(self):
 		self.list_for_listbox = []
@@ -49,7 +52,7 @@ class _UI:
 			if not len(self.list_for_listbox) > 0:
 				self.list_for_listbox = self.default_list_for_listbox
 		except Exception, err:
-			if __debug__:
+			if __batchdebug__:
 				appuifw.note(unicode(err), "error")
 			self.list_for_listbox = self.default_list_for_listbox
 		appuifw.app.menu = [self.profilemenu, self.operationmenu, self.aboutmenu, self.exitmenu]
@@ -79,7 +82,7 @@ class _UI:
 		try:
 			self.globalsettings = settings.read()
 		except Exception, err:
-			if __debug__:
+			if __batchdebug__:
 				appuifw.note(unicode(err), "error")
 			return
 		if not len(self.globalsettings.keys()) > 0:
@@ -100,7 +103,7 @@ class _UI:
 		try:
 			self.globalsettings = settings.read()
 		except Exception, err:
-			if __debug__:
+			if __batchdebug__:
 				appuifw.note(unicode(err), "error")
 			return
 		if not len(self.globalsettings.keys()) > 0:
@@ -157,7 +160,7 @@ class _UI:
 		try:
 			self.progs = settings.read().get(self.profile, "").get("applications", "")
 		except Exception, err:
-			if __debug__:
+			if __batchdebug__:
 				appuifw.note(unicode(err), "error")
 			return
 		if not len(self.progs) > 0:
@@ -170,7 +173,7 @@ class _UI:
 				e32.start_exe(apps.lista_applicazioni[id][2], "")
 				print u"Running '%s'" % apps.lista_applicazioni[id][0]
 			except Exception, err:
-				if __debug__:
+				if __batchdebug__:
 					print u"Error: %s" % err
 			e32.ao_sleep(0.1)
 
@@ -183,13 +186,13 @@ class _Core:
 		try:
 			self.lista_applicazioni = sorted(msys.listapp())
 		except Exception, err:
-			if __debug__:
+			if __batchdebug__:
 				appuifw.note(unicode(err), "error")
 			self.lista_applicazioni = []
 		try:
 			self.lista_task = sorted(msys.listtask())
 		except Exception, err:
-			if __debug__:
+			if __batchdebug__:
 				appuifw.note(unicode(err), "error")
 			self.lista_task = []
 		self.task = 0
@@ -291,7 +294,7 @@ class _Core:
 		try:
 			self.programmi = settings.read().get(self.profile, "").get("applications", "")
 		except Exception, err:
-			if __debug__:
+			if __batchdebug__:
 				appuifw.note(unicode(err), "error")
 
 	def _preprare_(self):
