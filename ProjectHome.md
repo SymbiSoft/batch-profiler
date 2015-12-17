@@ -1,0 +1,1 @@
+Simple Python application that takes care of running the programs included in the profiles created by the user.
